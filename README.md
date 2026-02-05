@@ -5,7 +5,7 @@
 ## 🌟 系统特性
 
 - **多源数据采集**: 自动从小说、短剧、漫剧、新闻、娱乐等多个渠道获取热门内容
-- **AI智能分析**: 集成Ollama本地AI模型进行深度趋势分析
+- **AI智能分析**: 集成Ollama本地AI模型或OpenAI兼容API进行深度趋势分析
 - **实时预测**: 基于历史数据和当前趋势预测明日市场动向
 - **可视化展示**: 美观的高科技风格Web界面，实时数据图表
 - **自动化运维**: 支持定时任务和自动数据更新
@@ -88,6 +88,12 @@ MAX_RETRIES = 3        # 最大重试次数
 # Ollama配置
 OLLAMA_HOST = "http://localhost:11434"
 
+# OpenAI兼容API配置 (如DeepSeek)
+AI_PROVIDER = "ollama"  # 或 "openai"
+OPENAI_API_BASE = "https://api.deepseek.com"
+OPENAI_API_KEY = "your_api_key"
+OPENAI_MODEL = "deepseek-chat"
+
 # 定时任务
 SCHEDULE_TIME = "02:00"  # 每日更新时间
 ```
@@ -113,6 +119,7 @@ TARGET_SITES = {
 
 ### 2. AI分析模块
 - 集成多种Ollama本地模型
+- 支持OpenAI兼容API接入
 - 实时趋势分析
 - 智能预测算法
 - 准确性验证机制
@@ -170,6 +177,15 @@ GET  /api/models/list            # 获取可用AI模型
 
 ### 1. 模型切换
 支持在多种Ollama模型间切换，根据不同需求选择合适的AI模型。
+
+如需接入DeepSeek等OpenAI兼容API，可设置环境变量：
+
+```bash
+export AI_PROVIDER=openai
+export OPENAI_API_BASE=https://api.deepseek.com
+export OPENAI_API_KEY=你的APIKey
+export OPENAI_MODEL=deepseek-chat
+```
 
 ### 2. 定制化分析
 可根据特定需求定制分析维度和指标。
