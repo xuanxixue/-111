@@ -14,6 +14,13 @@ class Config:
     
     # Ollama配置
     OLLAMA_HOST = "http://localhost:11434"
+
+    # AI提供方配置 (ollama/openai)
+    AI_PROVIDER = os.getenv("AI_PROVIDER", "ollama")
+    OPENAI_API_BASE = os.getenv("OPENAI_API_BASE", "https://api.openai.com")
+    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+    OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
+    OPENAI_TIMEOUT = int(os.getenv("OPENAI_TIMEOUT", "30"))
     
     # 数据库配置
     DATABASE_CONFIG = {
@@ -52,6 +59,26 @@ class Config:
             'https://www.zhihu.com/'
         ]
     }
+
+    # AI漫剧行业资讯/爆料RSS源
+    AI_MANGA_RSS_FEEDS = [
+        {
+            'name': 'GoogleNews-漫剧行业',
+            'url': 'https://news.google.com/rss/search?q=%E6%BC%AB%E5%89%A7%20%E8%A1%8C%E4%B8%9A&hl=zh-CN&gl=CN&ceid=CN:zh-Hans'
+        },
+        {
+            'name': 'GoogleNews-AI漫画',
+            'url': 'https://news.google.com/rss/search?q=AI%20%E6%BC%AB%E7%94%BB%20AIGC&hl=zh-CN&gl=CN&ceid=CN:zh-Hans'
+        },
+        {
+            'name': 'GoogleNews-动漫融资',
+            'url': 'https://news.google.com/rss/search?q=%E5%8A%A8%E6%BC%AB%20%E8%9E%8D%E8%B5%84%20%E4%BA%A7%E4%B8%9A&hl=zh-CN&gl=CN&ceid=CN:zh-Hans'
+        },
+        {
+            'name': 'GoogleNews-漫剧爆料',
+            'url': 'https://news.google.com/rss/search?q=%E6%BC%AB%E5%89%A7%20%E7%88%86%E6%96%99%20%E4%BC%A0%E9%97%BB&hl=zh-CN&gl=CN&ceid=CN:zh-Hans'
+        }
+    ]
     
     @staticmethod
     def init_directories():

@@ -1,16 +1,31 @@
-import ollama
 import json
 from datetime import datetime, timedelta
-from database import db_manager
+
+import ollama
+
 from config import Config
+from database import db_manager
+from openai_client import OpenAICompatibleClient
 
 class AIAnalyzer:
     def __init__(self):
         self.host = Config.OLLAMA_HOST
+        self.provider = Config.AI_PROVIDER
+        self.openai_client = OpenAICompatibleClient() if self.provider == "openai" else None
         self.available_models = self.get_available_models()
     
     def get_available_models(self):
         """获取可用的Ollama模型"""
+        if self.provider == "openai":
+            try:
+                response = self.openai_client.list_models()
+                models = [model['id'] for model in response.get('data', [])]
+                db_manager.log_message("INFO", "AIAnalyzer", f"发现{len(models)}个可用模型: {', '.join(models)}")
+                return models or [Config.OPENAI_MODEL]
+            except Exception as e:
+                db_manager.log_message("ERROR", "AIAnalyzer", f"获取OpenAI兼容模型列表失败: {str(e)}")
+                return [Config.OPENAI_MODEL]
+
         try:
             response = ollama.list()
             models = [model['name'] for model in response['models']]
@@ -29,15 +44,7 @@ class AIAnalyzer:
         analysis_prompt = self._prepare_trend_analysis_prompt(content_data)
         
         try:
-            response = ollama.chat(
-                model=model_name,
-                messages=[{
-                    'role': 'user',
-                    'content': analysis_prompt
-                }]
-            )
-            
-            analysis_result = response['message']['content']
+            analysis_result = self._chat_completion(analysis_prompt, model_name)
             return self._parse_trend_analysis(analysis_result)
             
         except Exception as e:
@@ -49,20 +56,31 @@ class AIAnalyzer:
         prediction_prompt = self._prepare_prediction_prompt(historical_data, today_data)
         
         try:
-            response = ollama.chat(
-                model=model_name,
-                messages=[{
-                    'role': 'user',
-                    'content': prediction_prompt
-                }]
-            )
-            
-            prediction_result = response['message']['content']
+            prediction_result = self._chat_completion(prediction_prompt, model_name)
             return self._parse_prediction_result(prediction_result)
             
         except Exception as e:
             db_manager.log_message("ERROR", "AIAnalyzer", f"预测分析失败: {str(e)}")
             return None
+
+    def _chat_completion(self, prompt, model_name):
+        """统一AI对话调用"""
+        if self.provider == "openai":
+            model = model_name if model_name and model_name != 'llama2' else Config.OPENAI_MODEL
+            response = self.openai_client.chat(
+                model=model,
+                messages=[{'role': 'user', 'content': prompt}]
+            )
+            return response['choices'][0]['message']['content']
+
+        response = ollama.chat(
+            model=model_name,
+            messages=[{
+                'role': 'user',
+                'content': prompt
+            }]
+        )
+        return response['message']['content']
     
     def _prepare_trend_analysis_prompt(self, content_data):
         """准备趋势分析提示词"""
